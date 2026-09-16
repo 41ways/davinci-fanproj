@@ -51,6 +51,12 @@
     App.state = R.newGame(App.seats.map(function (s) { return { id: s.id, name: s.name }; }),
                           Math.floor(Math.random() * 1e9));
     App.sel = null; App.setupSelColor = null; App.shownEvent = null;
+    // 판 수 세기 — 방장(또는 혼자 하기)만 보낸다. 참가자도 보내면 한 판이 인원수만큼 세어진다.
+    App.statAt = Date.now();
+    App.statOver = false;
+    if (App.mode !== 'client' && window.norara) {
+      norara.ev('start', { n: App.seats.filter(function (s) { return !s.bot; }).length });
+    }
     show('game');
     pushViews();
   }
@@ -927,6 +933,15 @@
 
   function showOver(v) {
     var win = null;
+    // 판 하나에 한 번만 — 이 화면은 다시 그릴 때마다 불린다
+    if (App.mode !== 'client' && !App.statOver && window.norara) {
+      App.statOver = true;
+      norara.ev('end', {
+        n: App.seats.filter(function (s) { return !s.bot; }).length,
+        sec: Math.round((Date.now() - (App.statAt || Date.now())) / 1000)
+      });
+    }
+
     v.players.forEach(function (p) { if (p.id === v.winner) win = p; });
     $('overTitle').textContent = !win ? '무승부' : (win.id === v.me ? '승리' : win.name + ' 승리');
     $('overText').textContent = !win ? '남은 사람이 없습니다.'
