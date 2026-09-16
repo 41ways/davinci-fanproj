@@ -12,7 +12,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
-<link rel="stylesheet" href="style.css?v=801bb9b0">
+<!-- 테마를 그리기 전에 정한다. 나중에 정하면 밝은 화면이 한 번 번쩍인다. -->
+<script>(function(){try{var t=localStorage.getItem('davinci.theme');
+if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+document.documentElement.setAttribute('data-theme',t);
+}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+<link rel="stylesheet" href="style.css?v=41faf20e">
 </head>
 <body>
 
@@ -195,6 +200,8 @@
 
 <div id="toast" class="toast"></div>
 
+<button id="themeBtn" class="theme-btn" role="switch" aria-checked="false" aria-label="어둡게 보기" title="밝게 / 어둡게"><span class="tb-ico">☀</span><span class="tb-ico">☾</span><span class="tb-knob"></span></button>
+
 <div class="sig">정한결</div>
 
 <!-- 같은 방 사람끼리 하는 채팅 — 봇만 있는 방에서는 뜨지 않는다 -->
@@ -213,7 +220,7 @@
 <script src="rules.js?v=aaf37e77"></script>
 <script src="ai.js?v=35335987"></script>
 <script src="net.js?v=f14785b8"></script>
-<script src="app.js?v=c4918a8e"></script>
+<script src="app.js?v=1b23e80f"></script>
 <!-- 연출 속도 재기 — ?qa=pace 로 들어올 때만 불러온다 (평소에는 요청조차 없다) -->
 <script>if(new URLSearchParams(location.search).get('qa')==='pace'){var s=document.createElement('script');s.src='qa/scene.js';document.body.appendChild(s);}</script>
 

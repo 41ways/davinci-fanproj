@@ -1123,6 +1123,35 @@
   $('btnLeave').onclick = function () { if (App.net) App.net.close(); location.reload(); };
   $('btnAgain').onclick = backToLobby;
   $('hint').onchange = function () { render(); };
+
+  /* ---------------- 밝게 / 어둡게 ----------------
+     고른 적이 없으면 기기 설정을 따라가고, 한 번 고르면 그 선택을 기억한다.
+     첫 칠은 index.html 의 짧은 스크립트가 미리 해 둔다 (화면이 번쩍이지 않게). */
+  var THEME_KEY = 'davinci.theme';
+  var themeMq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  function savedTheme() {
+    try { var t = localStorage.getItem(THEME_KEY); return (t === 'dark' || t === 'light') ? t : null; }
+    catch (e) { return null; }
+  }
+  function paintTheme() {
+    var t = savedTheme() || (themeMq && themeMq.matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+    var b = $('themeBtn');
+    b.setAttribute('aria-checked', t === 'dark' ? 'true' : 'false');
+    b.setAttribute('aria-label', t === 'dark' ? '밝게 보기' : '어둡게 보기');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', t === 'dark' ? '#10141a' : '#eceef1');
+  }
+  $('themeBtn').onclick = function () {
+    var now = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    try { localStorage.setItem(THEME_KEY, now === 'dark' ? 'light' : 'dark'); } catch (e) {}
+    paintTheme();
+  };
+  // 고른 적이 없는 사람은 기기가 밤낮을 바꾸면 같이 바뀐다
+  if (themeMq && themeMq.addEventListener) {
+    themeMq.addEventListener('change', function () { if (!savedTheme()) paintTheme(); });
+  }
+  paintTheme();
   $('name').value = localStorage.getItem('davinci.name') || '';
   $('name').addEventListener('change', function () { localStorage.setItem('davinci.name', myName()); });
 

@@ -36,8 +36,77 @@
   --miss:#a8443a;
 
   --shadow-lift: 0 5px 12px rgba(30,40,55,.16);
+
+  /* 표면 — 다크 테마는 아래쪽 [data-theme="dark"] 에서 이 값들만 갈아끼운다 */
+  --line-strong:#b9c2ce;
+  --accent-hi:#24405f;
+  --accent-2:#7d93b3;
+  --game-bg:
+    radial-gradient(120% 58% at 50% -6%, rgba(255,255,255,.95), transparent 58%),
+    radial-gradient(80% 50% at 50% 108%, rgba(47,79,122,.08), transparent 70%),
+    linear-gradient(180deg, #eef0f4 0%, #e7eaef 48%, #e1e4ea 100%);
+  --table-bg:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.5) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg,  rgba(30,40,55,.026) 0 1px, transparent 1px 4px),
+    radial-gradient(125% 85% at 50% 0%, #f4f6f9, #e6e9ef 68%, #dfe3e9);
+  --table-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 0 0 1px rgba(211,216,224,.85),
+    inset 0 -20px 44px -26px rgba(30,40,55,.34),
+    0 12px 34px -20px rgba(30,40,55,.42);
+  --seat-bg: linear-gradient(180deg, #ffffff, #f6f8fb);
+  --seat-line:#cfd6e0;
+  --seat-hl: rgba(255,255,255,1);
+  --seat-rule: rgba(47,79,122,.13);
+  --seat-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    0 2px 5px -2px rgba(30,40,55,.16),
+    0 12px 24px -20px rgba(30,40,55,.55);
+  --seat-mine-line:#c4ccd8;
+  --seat-mine-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    0 3px 8px -3px rgba(30,40,55,.2),
+    0 16px 30px -22px rgba(30,40,55,.6);
+  --seat-turn-bg:
+    radial-gradient(130% 90% at 50% -30%, rgba(47,79,122,.12), transparent 62%),
+    linear-gradient(180deg, #f8fbff, #edf3fb);
+  --band-bg: linear-gradient(180deg, rgba(255,255,255,.8), rgba(255,255,255,.32));
+  --band-line: rgba(211,216,224,.8);
+  --band-mine-bg: linear-gradient(180deg, #f6faff, #e9f1fa);
+  --band-mine-line: rgba(47,79,122,.32);
+  --chip-bg: rgba(255,255,255,.75);
+  --tray-bg: radial-gradient(120% 100% at 50% 0%, rgba(30,40,55,.055), rgba(30,40,55,.02));
+  --tray-shadow:
+    inset 0 2px 7px rgba(30,40,55,.11),
+    inset 0 0 0 1px rgba(30,40,55,.05),
+    0 1px 0 rgba(255,255,255,.8);
+  --groove-bg: radial-gradient(120% 100% at 50% 0%, rgba(30,40,55,.05), rgba(30,40,55,.018));
+  --groove-shadow:
+    inset 0 2px 6px rgba(30,40,55,.09),
+    inset 0 0 0 1px rgba(30,40,55,.045),
+    0 1px 0 rgba(255,255,255,.85);
+  --raised-bg: linear-gradient(180deg, #ffffff, #f4f7fb);
+  --pop-bg:#ffffff;
+  --scrim: rgba(241,235,222,.95);
+  --toast-bg: var(--ink);
+  --toast-fg:#fff;
+  --flag-halo: rgba(255,255,255,.6);
+  --slot-line:#cbbfa6;
+  --slot-bg: rgba(47,79,122,.06);
+  --dir-end:#a89a80;
+  --tb-up:#332e27;
+  --tw-up:#ece2cf;
+  --unk-1:#d9cfba; --unk-2:#cfc4ac; --unk-fg:#8b7f68; --unk-line:#bdb098; --unk-edge:#a2967e80;
+  --ot-bg: linear-gradient(160deg, #3f5f8c, #24406a 60%, #1c3456);
+  --ot-line:#16294a;
+  --ot-edge:#0f1e36aa;
+  --ot-open-bg: linear-gradient(170deg, #ffffff, #e9eef5);
+  --ot-open-fg:#1f3657;
+  --opick-bg:#1f3657;
+  --opick-fg:#fff;
 }
 
+:root { color-scheme: light; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* hidden 속성은 브라우저 기본 규칙(display:none)으로 동작하는데,
@@ -86,14 +155,14 @@ button {
   background: var(--panel); border: 1px solid var(--line);
   box-shadow: 0 1px 2px rgba(30,40,55,.07);
 }
-button:hover:not(:disabled) { background: var(--panel2); border-color: #b9c2ce; }
+button:hover:not(:disabled) { background: var(--panel2); border-color: var(--line-strong); }
 button:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
 button:disabled { opacity: .4; cursor: default; box-shadow: none; }
 button.primary {
   background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
   width: 100%; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(47,79,122,.30);
 }
-button.primary:hover:not(:disabled) { background: #24405f; border-color: #24405f; }
+button.primary:hover:not(:disabled) { background: var(--accent-hi); border-color: var(--accent-hi); }
 button.ghost { background: none; border-color: transparent; color: var(--faint); width: 100%; margin-top: 6px; box-shadow: none; }
 button.ghost:hover { background: rgba(30,40,55,.05); }
 
@@ -154,7 +223,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
   box-shadow: 0 1px 2px rgba(30,40,55,.06);
 }
 .player.turn {
-  border-color: var(--accent); background: #f4f8fd;
+  border-color: var(--accent); background: var(--seat-turn-bg);
   box-shadow: 0 0 0 4px var(--accent-soft), 0 4px 14px rgba(47,79,122,.16);
 }
 .player:not(.turn):not(.mine) { opacity: .82; }
@@ -217,12 +286,12 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 
 /* 아직 색조차 모르는 패 (시작 정리 중인 남의 패) */
 .tile.unknown {
-  background: repeating-linear-gradient(135deg, #d9cfba 0 6px, #cfc4ac 6px 12px);
-  color: #8b7f68; border-color: #bdb098;
-  box-shadow: 0 4px 0 #a2967e80, var(--shadow-lift);
+  background: repeating-linear-gradient(135deg, var(--unk-1) 0 6px, var(--unk-2) 6px 12px);
+  color: var(--unk-fg); border-color: var(--unk-line);
+  box-shadow: 0 4px 0 var(--unk-edge), var(--shadow-lift);
 }
 .tile.unknown::before { content: none; }
-.tile.unknown.down::after { content: '·'; color: rgba(90,80,62,.5); font-size: 22px; }
+.tile.unknown.down::after { content: '·'; color: var(--unk-fg); opacity: .7; font-size: 22px; }
 
 .tile.down { color: transparent; }
 .tile.down::after {
@@ -246,8 +315,8 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
   border-radius: 0 0 8px 8px; background: var(--miss);
   opacity: .85;
 }
-.tile.w.up { background: #ece2cf; }
-.tile.b.up { background: #332e27; }
+.tile.w.up { background: var(--tw-up); }
+.tile.b.up { background: var(--tb-up); }
 
 /* 내 손패에서 나만 보는 숫자 */
 .tile.own { border-style: dashed; border-color: var(--accent); }
@@ -275,7 +344,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 
 /* 작은 수 -> 큰 수 */
 .dir { display: flex; align-items: center; gap: 6px; margin-top: 9px; font-size: 9.5px; color: var(--faint); letter-spacing: .08em; }
-.dir .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), #a89a80); }
+.dir .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), var(--dir-end)); }
 .mine .dir { font-size: 10.5px; }
 
 /* ---------- 연출 ---------- */
@@ -316,8 +385,8 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
   pointer-events: none; white-space: nowrap;
   animation: pop 1.15s cubic-bezier(.2,1.4,.4,1) forwards;
 }
-.hitflag.hit  { color: var(--hit);  text-shadow: 0 8px 34px rgba(79,122,58,.45), 0 2px 0 rgba(255,255,255,.6); }
-.hitflag.miss { color: var(--miss); text-shadow: 0 8px 34px rgba(184,69,47,.45), 0 2px 0 rgba(255,255,255,.6); }
+.hitflag.hit  { color: var(--hit);  text-shadow: 0 8px 34px rgba(79,122,58,.45), 0 2px 0 var(--flag-halo); }
+.hitflag.miss { color: var(--miss); text-shadow: 0 8px 34px rgba(184,69,47,.45), 0 2px 0 var(--flag-halo); }
 @media (max-width: 560px) { .hitflag { font-size: 58px; } }
 @keyframes pop {
   0%   { opacity: 0; transform: translate(-50%,-50%) scale(.4); }
@@ -344,7 +413,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 .slots { display: flex; gap: 6px; justify-content: center; align-items: flex-start; margin-top: 4px; flex-wrap: wrap; }   /* 폰에서 줄이 화면 밖으로 밀리지 않게 */
 .slot {
   width: 16px; height: 64px; border-radius: 6px; flex: none; cursor: pointer;
-  border: 1px dashed #cbbfa6; background: rgba(47,79,122,.06);
+  border: 1px dashed var(--slot-line); background: var(--slot-bg);
   transition: background .12s, border-color .12s;
 }
 .slot.big { height: 84px; width: 20px; }
@@ -373,7 +442,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 /* ---------- 결과 / 알림 ---------- */
 .overlay {
   position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-start; justify-content: center;
-  overflow-y: auto; padding: 24px; background: rgba(241,235,222,.95);
+  overflow-y: auto; padding: 24px; background: var(--scrim);
 }
 .overlay .card { max-width: 360px; width: 100%; text-align: center; margin: auto 0; }
 .big { font-size: 28px; font-weight: 900; letter-spacing: .1em; margin-bottom: 10px; }
@@ -381,7 +450,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 
 .toast {
   position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
-  background: var(--ink); color: #fff; font-size: 12.5px; font-weight: 600;
+  background: var(--toast-bg); color: var(--toast-fg); font-size: 12.5px; font-weight: 600;
   padding: 11px 17px; border-radius: 9px; z-index: 30;
   opacity: 0; pointer-events: none; transition: opacity .2s;
   max-width: 90vw; text-align: center; box-shadow: 0 6px 18px rgba(30,40,55,.27);
@@ -409,7 +478,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
   z-index: 24; pointer-events: none;
   display: flex; align-items: center; gap: 15px;
   padding: 8px 12px 8px 20px; border-radius: 999px; max-width: 94vw;
-  background: #ffffff; border: 2px solid var(--line);
+  background: var(--pop-bg); border: 2px solid var(--line);
   box-shadow: 0 10px 30px rgba(30,40,55,.30);
   opacity: 0; transition: opacity .16s ease, transform .16s ease;
 }
@@ -475,7 +544,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 .hero-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .hero-rule {
   width: 54px; height: 3px; border-radius: 2px; margin: 0 auto 16px;
-  background: linear-gradient(90deg, var(--accent), #7d93b3);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
 }
 .hero-tag { font-size: 13px; line-height: 1.95; color: var(--dim); margin-bottom: 30px; }
 .hero .primary { font-size: 15px; padding: 14px 16px; }
@@ -500,9 +569,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 #game {
   min-height: 100dvh;
   display: flex; flex-direction: column;
-  background:
-    radial-gradient(130% 62% at 50% -8%, rgba(255,255,255,.9), transparent 60%),
-    linear-gradient(180deg, #eef0f4 0%, #e7eaef 48%, #e1e4ea 100%);
+  background: var(--game-bg);
 }
 .table {
   position: relative;
@@ -511,15 +578,8 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
   margin-top: 10px; margin-bottom: 16px;
   border-radius: 20px;
   /* 리넨 결 — 두 방향으로 아주 옅게 */
-  background:
-    repeating-linear-gradient(90deg, rgba(255,255,255,.5) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(0deg,  rgba(30,40,55,.026) 0 1px, transparent 1px 4px),
-    radial-gradient(125% 85% at 50% 0%, #f4f6f9, #e6e9ef 68%, #dfe3e9);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.95),
-    inset 0 0 0 1px rgba(211,216,224,.85),
-    inset 0 -20px 44px -26px rgba(30,40,55,.34),
-    0 12px 34px -20px rgba(30,40,55,.42);
+  background: var(--table-bg);
+  box-shadow: var(--table-shadow);
 }
 @media (max-width: 640px) { .table { border-radius: 14px; } }
 
@@ -531,16 +591,16 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
   display: flex; align-items: center; justify-content: center; gap: 9px;
   font-size: 13px; font-weight: 700; color: var(--dim);
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255,255,255,.8), rgba(255,255,255,.32));
-  border: 1px solid rgba(211,216,224,.8);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.95);
+  background: var(--band-bg);
+  border: 1px solid var(--band-line);
+  box-shadow: inset 0 1px 0 var(--seat-hl);
   transition: opacity .18s ease;
   padding: 0 16px; text-align: center;
 }
 .nowband.mine {
   color: var(--accent);
-  border-color: rgba(47,79,122,.32);
-  background: linear-gradient(180deg, #f6faff, #e9f1fa);
+  border-color: var(--band-mine-line);
+  background: var(--band-mine-bg);
 }
 /* 알림이 뜨는 동안에는 뒤로 물러난다 — 두 개가 겹쳐 읽히지 않게 */
 .nowband.behind { opacity: 0; }
@@ -556,39 +616,31 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 /* ════════════════ 자리 명패 ════════════════
    흰 카드가 아니라, 상판에 놓인 명패로 보이게. 이름줄 아래에 새김선을 둔다. */
 .player {
-  background: linear-gradient(180deg, #ffffff, #f6f8fb);
-  border-color: #cfd6e0;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,1),
-    0 2px 5px -2px rgba(30,40,55,.16),
-    0 12px 24px -20px rgba(30,40,55,.55);
+  background: var(--seat-bg);
+  border-color: var(--seat-line);
+  box-shadow: var(--seat-shadow);
 }
 .phead {
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(47,79,122,.13);
+  border-bottom: 1px solid var(--seat-rule);
 }
 .phead .who { font-family: var(--display); font-size: 14.5px; }
 
 /* 차례인 자리에는 등이 켜진다 */
 .player.turn {
-  background:
-    radial-gradient(130% 90% at 50% -30%, rgba(47,79,122,.12), transparent 62%),
-    linear-gradient(180deg, #f8fbff, #edf3fb);
+  background: var(--seat-turn-bg);
   animation: seatlamp 2.9s ease-in-out infinite;
 }
 @keyframes seatlamp {
-  0%, 100% { box-shadow: inset 0 1px 0 #fff, 0 0 0 4px var(--accent-soft), 0 6px 16px -8px rgba(47,79,122,.34); }
-  50%      { box-shadow: inset 0 1px 0 #fff, 0 0 0 5px var(--accent-soft), 0 10px 26px -8px rgba(47,79,122,.48); }
+  0%, 100% { box-shadow: inset 0 1px 0 var(--seat-hl), 0 0 0 4px var(--accent-soft), 0 6px 16px -8px rgba(47,79,122,.34); }
+  50%      { box-shadow: inset 0 1px 0 var(--seat-hl), 0 0 0 5px var(--accent-soft), 0 10px 26px -8px rgba(47,79,122,.48); }
 }
 @media (prefers-reduced-motion: reduce) { .player.turn { animation: none; } }
 
 /* 내 자리는 조금 더 두껍게 — 판에서 내가 어디인지 한눈에 */
 .player.mine {
-  border-color: #c4ccd8;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,1),
-    0 3px 8px -3px rgba(30,40,55,.2),
-    0 16px 30px -22px rgba(30,40,55,.6);
+  border-color: var(--seat-mine-line);
+  box-shadow: var(--seat-mine-shadow);
 }
 
 /* 탈락한 자리는 불이 꺼진다 */
@@ -606,12 +658,8 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 .floor {
   padding: 13px 10px 11px;
   border-radius: 14px;
-  background:
-    radial-gradient(120% 100% at 50% 0%, rgba(30,40,55,.055), rgba(30,40,55,.02));
-  box-shadow:
-    inset 0 2px 7px rgba(30,40,55,.11),
-    inset 0 0 0 1px rgba(30,40,55,.05),
-    0 1px 0 rgba(255,255,255,.8);
+  background: var(--tray-bg);
+  box-shadow: var(--tray-shadow);
 }
 .floor h3 { color: var(--dim); }
 
@@ -632,8 +680,8 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 .drawn-box {
   padding: 11px 14px 12px; margin-left: auto; margin-right: auto;
   border-radius: 12px; width: max-content;
-  background: linear-gradient(180deg, #ffffff, #f4f7fb);
-  box-shadow: inset 0 1px 0 #fff, 0 3px 10px -4px rgba(30,40,55,.28);
+  background: var(--raised-bg);
+  box-shadow: inset 0 1px 0 var(--seat-hl), 0 3px 10px -4px rgba(30,40,55,.28);
 }
 
 /* ════════════════ 타이틀 — 아래 빈 공간 정리 ════════════════
@@ -671,12 +719,7 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
 .mine .hand:empty { min-height: calc(var(--tileh, 84px) + 6px); }
 
 /* 판 바깥은 은은한 조명 아래 — 평평한 회색이 아니라 */
-#game {
-  background:
-    radial-gradient(120% 58% at 50% -6%, rgba(255,255,255,.95), transparent 58%),
-    radial-gradient(80% 50% at 50% 108%, rgba(47,79,122,.08), transparent 70%),
-    linear-gradient(180deg, #eef0f4 0%, #e7eaef 48%, #e1e4ea 100%);
-}
+#game { background: var(--game-bg); }
 
 /* 손패가 놓이는 홈 — 명패 안쪽이 휑하게 넓어 타일이 허공에 뜬 것처럼 보였다.
    바닥 트레이와 같은 결로 홈을 파서, 자리마다 "패를 놓는 자리"가 되게 한다. */
@@ -684,11 +727,8 @@ button.ghost:hover { background: rgba(30,40,55,.05); }
   position: relative;
   padding: 10px 8px 11px;
   border-radius: 11px;
-  background: radial-gradient(120% 100% at 50% 0%, rgba(30,40,55,.05), rgba(30,40,55,.018));
-  box-shadow:
-    inset 0 2px 6px rgba(30,40,55,.09),
-    inset 0 0 0 1px rgba(30,40,55,.045),
-    0 1px 0 rgba(255,255,255,.85);
+  background: var(--groove-bg);
+  box-shadow: var(--groove-shadow);
   min-height: calc(var(--tileh, 60px) + 22px);
 }
 .mine .hand { min-height: calc(var(--tileh, 84px) + 24px); }
@@ -804,7 +844,7 @@ body.holding .slot { cursor: default; }
 }
 
 /* ---------- 시작 알림 ---------- */
-.hitflag.go { color: var(--accent); text-shadow: 0 8px 34px rgba(42,111,224,.4), 0 2px 0 rgba(255,255,255,.6); }
+.hitflag.go { color: var(--accent); text-shadow: 0 8px 34px rgba(42,111,224,.4), 0 2px 0 var(--flag-halo); }
 
 /* ---------- 시작 손패 고르기를 눈에 띄게 ---------- */
 .floor.can h3 { color: var(--accent); font-size: 12px; }
@@ -817,13 +857,13 @@ body.holding .slot { cursor: default; }
 .stage {
   margin: 0 auto 9px; padding: 9px 14px 11px; max-width: 460px;
   text-align: center; border-radius: 14px;
-  background: linear-gradient(180deg, #ffffff, #f5f7fa);
-  border: 1px solid #cfd6e0;
-  box-shadow: inset 0 1px 0 #fff, 0 6px 16px -10px rgba(30,40,55,.4);
+  background: var(--seat-bg);
+  border: 1px solid var(--seat-line);
+  box-shadow: inset 0 1px 0 var(--seat-hl), 0 6px 16px -10px rgba(30,40,55,.4);
 }
 .stage.mine {
   border-color: var(--accent);
-  background: linear-gradient(180deg, #f8fbff, #eaf1fa);
+  background: var(--seat-turn-bg);
   box-shadow: 0 0 0 3px var(--accent-soft), 0 8px 20px -10px rgba(47,79,122,.5);
 }
 .stage.fresh { animation: stagepop .42s cubic-bezier(.2,1.3,.4,1); }
@@ -855,7 +895,7 @@ body.holding .slot { cursor: default; }
 .nb-chip {
   padding: 3px 10px; border-radius: 999px; white-space: nowrap;
   font-size: 12.5px; font-weight: 700; color: var(--dim);
-  background: rgba(255,255,255,.75); border: 1px solid var(--line);
+  background: var(--chip-bg); border: 1px solid var(--line);
 }
 .nb-chip.me { color: var(--ink); }
 .nb-chip.now { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 2px 8px -2px rgba(47,79,122,.5); }
@@ -874,7 +914,7 @@ body.holding .slot { cursor: default; }
 }
 .opick {
   font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px;
-  background: #1f3657; color: #fff; font-variant-numeric: tabular-nums;
+  background: var(--opick-bg); color: var(--opick-fg); font-variant-numeric: tabular-nums;
 }
 .opick.best { background: #b8862b; }
 
@@ -889,19 +929,19 @@ body.holding .slot { cursor: default; }
   width: 34px; height: 46px; border-radius: 7px; position: relative;
   display: flex; align-items: center; justify-content: center;
   font-size: 19px; font-weight: 900; font-variant-numeric: tabular-nums;
-  background: linear-gradient(160deg, #3f5f8c, #24406a 60%, #1c3456);
-  border: 1px solid #16294a; color: transparent;
-  box-shadow: 0 3px 0 #0f1e36aa, 0 5px 10px rgba(30,40,55,.2);
+  background: var(--ot-bg);
+  border: 1px solid var(--ot-line); color: transparent;
+  box-shadow: 0 3px 0 var(--ot-edge), 0 5px 10px rgba(30,40,55,.2);
   transition: transform .15s ease, opacity .2s ease;
 }
 .otile:not(.open)::after { content: '?'; color: rgba(255,255,255,.45); font-size: 16px; font-weight: 700; }
-.otile.open { background: linear-gradient(170deg, #ffffff, #e9eef5); color: #1f3657; border-color: #b9c4d3; box-shadow: 0 3px 0 #98a3b2aa, 0 5px 10px rgba(30,40,55,.18); }
+.otile.open { background: var(--ot-open-bg); color: var(--ot-open-fg); border-color: var(--tw-line); box-shadow: 0 3px 0 var(--tw-edge), 0 5px 10px rgba(30,40,55,.18); }
 .otile.taken { transform: translateY(-4px); }
 .otile.minepick { outline: 2px solid var(--accent); outline-offset: 2px; }
 .otile.best { outline: 3px solid #d4a23c; outline-offset: 2px; color: #7a5410; box-shadow: 0 3px 0 #98a3b2aa, 0 0 18px rgba(212,162,60,.7); }
 .otile.pick { cursor: pointer; }
-@media (hover: hover) { .otile.pick:hover { transform: translateY(-6px); box-shadow: 0 3px 0 #0f1e36aa, 0 12px 18px rgba(30,40,55,.3); } }
-.oboard.can .otile.pick { box-shadow: 0 3px 0 #0f1e36aa, 0 0 0 2px var(--accent-soft), 0 5px 10px rgba(30,40,55,.2); }
+@media (hover: hover) { .otile.pick:hover { transform: translateY(-6px); box-shadow: 0 3px 0 var(--ot-edge), 0 12px 18px rgba(30,40,55,.3); } }
+.oboard.can .otile.pick { box-shadow: 0 3px 0 var(--ot-edge), 0 0 0 2px var(--accent-soft), 0 5px 10px rgba(30,40,55,.2); }
 .oboard.done .otile:not(.taken) { opacity: .28; }
 .otag { font-size: 10px; font-weight: 700; color: var(--dim); height: 13px; line-height: 13px; white-space: nowrap; }
 .otile.lift { animation: olift .42s cubic-bezier(.2,1.4,.4,1); }
@@ -915,7 +955,7 @@ body.holding .slot { cursor: default; }
   position: fixed; left: 50%; top: 44%; z-index: 26; pointer-events: none;
   transform: translate(-50%, -50%); opacity: 0; visibility: hidden;
   min-width: min(360px, 88vw); max-width: 92vw; padding: 18px 30px 17px; text-align: center;
-  border-radius: 18px; background: rgba(255,255,255,.97);
+  border-radius: 18px; background: var(--pop-bg);
   border: 2px solid var(--accent);
   box-shadow: 0 0 0 6px var(--accent-soft), 0 24px 60px -14px rgba(30,40,55,.5);
 }
@@ -950,3 +990,153 @@ body.holding .slot { cursor: default; }
 .piles { min-width: 0; }
 .floorbody .drawn-box { margin: 0; flex: none; padding: 8px 11px 9px; }
 .st-text:empty { display: none; }
+
+/* ════════════════ 다크 테마 ════════════════
+   밤에 켜 두기 좋게. 팔레트만 갈아끼운다 — 규칙은 위쪽 라이트 테마 그대로다.
+   상판은 어둡게 내리되 검정 타일에는 테두리를 밝게 줘서 상판에 묻히지 않게 했고,
+   흰 타일은 눈이 부시지 않을 만큼만 낮췄다.
+   테마는 app.js 가 html[data-theme] 로 정한다 (저장된 선택 없으면 기기 설정). */
+:root[data-theme="dark"] {
+  --bg:#10141a;
+  --panel:#1a202a;
+  --panel2:#232b37;
+  --line:#333c49;
+  --line-2:#2a323e;
+  --ink:#e8edf4;
+  --dim:#a5b0bf;
+  --faint:#98a3b3;
+  --accent:#7ea8dd;
+  --accent-soft:#223349;
+  --accent-ink:#0e141c;
+
+  --tb-bg:#262d38;
+  --tb-top:#39424f;
+  --tb-fg:#eef1f5;
+  --tb-line:#505b6c;
+  --tb-edge:#06090ecc;
+
+  --tw-bg:#e9eef4;
+  --tw-top:#f2f5f9;
+  --tw-bg2:#ccd6e2;
+  --tw-fg:#161a21;
+  --tw-line:#97a3b3;
+  --tw-edge:#3c4553cc;
+
+  --miss-bg:#3a2320;
+  --miss-fg:#e8a49a;
+  --hit:#6fbe8d;
+  --miss:#e0796a;
+
+  --shadow-lift: 0 6px 14px rgba(0,0,0,.55);
+
+  --line-strong:#566073;
+  --accent-hi:#9dc0ef;
+  --accent-2:#4c6d9e;
+  --game-bg:
+    radial-gradient(120% 58% at 50% -6%, rgba(126,168,221,.10), transparent 58%),
+    radial-gradient(80% 50% at 50% 108%, rgba(126,168,221,.07), transparent 70%),
+    linear-gradient(180deg, #151a22 0%, #11161d 48%, #0d1117 100%);
+  --table-bg:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg,  rgba(0,0,0,.20) 0 1px, transparent 1px 4px),
+    radial-gradient(125% 85% at 50% 0%, #212936, #1a212c 68%, #161c26);
+  --table-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 0 0 1px rgba(255,255,255,.05),
+    inset 0 -20px 44px -26px rgba(0,0,0,.7),
+    0 12px 34px -20px rgba(0,0,0,.8);
+  --seat-bg: linear-gradient(180deg, #252d3a, #1e2531);
+  --seat-line:#3a4452;
+  --seat-hl: rgba(255,255,255,.07);
+  --seat-rule: rgba(126,168,221,.18);
+  --seat-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 2px 5px -2px rgba(0,0,0,.5),
+    0 12px 24px -20px rgba(0,0,0,.9);
+  --seat-mine-line:#4d5766;
+  --seat-mine-shadow:
+    inset 0 1px 0 rgba(255,255,255,.09),
+    0 3px 8px -3px rgba(0,0,0,.55),
+    0 16px 30px -22px rgba(0,0,0,.9);
+  --seat-turn-bg:
+    radial-gradient(130% 90% at 50% -30%, rgba(126,168,221,.22), transparent 62%),
+    linear-gradient(180deg, #27374f, #1f2c3f);
+  --band-bg: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  --band-line: rgba(255,255,255,.10);
+  --band-mine-bg: linear-gradient(180deg, #26374e, #1d2a3c);
+  --band-mine-line: rgba(126,168,221,.42);
+  --chip-bg: rgba(255,255,255,.07);
+  --tray-bg: radial-gradient(120% 100% at 50% 0%, rgba(0,0,0,.34), rgba(0,0,0,.2));
+  --tray-shadow:
+    inset 0 2px 8px rgba(0,0,0,.5),
+    inset 0 0 0 1px rgba(255,255,255,.04),
+    0 1px 0 rgba(255,255,255,.04);
+  --groove-bg: radial-gradient(120% 100% at 50% 0%, rgba(0,0,0,.3), rgba(0,0,0,.16));
+  --groove-shadow:
+    inset 0 2px 6px rgba(0,0,0,.45),
+    inset 0 0 0 1px rgba(255,255,255,.04),
+    0 1px 0 rgba(255,255,255,.05);
+  --raised-bg: linear-gradient(180deg, #2a3341, #222a36);
+  --pop-bg:#1c232e;
+  --scrim: rgba(8,11,16,.94);
+  --toast-bg:#2c3542;
+  --toast-fg:#f2f5f9;
+  --flag-halo: rgba(0,0,0,.55);
+  --slot-line:#566073;
+  --slot-bg: rgba(126,168,221,.10);
+  --dir-end:#6d7b8f;
+  --tb-up:#23272f;
+  --tw-up:#c6cfdb;
+  --unk-1:#3b4250; --unk-2:#333a46; --unk-fg:#98a2b2; --unk-line:#4c5666; --unk-edge:#0b0e14aa;
+  --ot-bg: linear-gradient(160deg, #3c5b87, #26436e 60%, #1d3558);
+  --ot-line:#4a6187;
+  --ot-edge:#080f1caa;
+  --ot-open-bg: linear-gradient(170deg, #eef2f8, #d5dfea);
+  --ot-open-fg:#17283f;
+  --opick-bg:#33507d;
+  --opick-fg:#eaf1fb;
+}
+
+/* 다크에서만 손보는 몇 가지 — 변수만으로는 안 되는 것들.
+   어두운 바탕에서는 투명도로 죽인 것이 라이트보다 훨씬 더 묻힌다. 조금씩 올린다. */
+:root[data-theme="dark"] { color-scheme: dark; }   /* 체크박스·스크롤바도 어둡게 */
+:root[data-theme="dark"] .player:not(.turn):not(.mine) { opacity: .92; }
+:root[data-theme="dark"] .player.out { opacity: .55; filter: grayscale(.5); }
+:root[data-theme="dark"] .nums button.off { opacity: .4; }
+:root[data-theme="dark"] .oboard.done .otile:not(.taken) { opacity: .38; }
+:root[data-theme="dark"] .tile.b.down::after { color: rgba(245,240,230,.62); }
+:root[data-theme="dark"] .mine .tile.up { opacity: .72; }
+:root[data-theme="dark"] .sig { opacity: .5; }
+:root[data-theme="dark"] .tile.up { box-shadow: inset 0 2px 5px rgba(0,0,0,.55); border-color: rgba(0,0,0,.5); }
+:root[data-theme="dark"] .floor .pile .tile { box-shadow: 0 3px 0 var(--tb-edge), 0 3px 8px rgba(0,0,0,.45); }
+:root[data-theme="dark"] .floor .pile .tile.w { box-shadow: 0 3px 0 var(--tw-edge), 0 3px 8px rgba(0,0,0,.45); }
+:root[data-theme="dark"] .block { box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+:root[data-theme="dark"] button.ghost:hover { background: rgba(255,255,255,.06); }
+:root[data-theme="dark"] .legal { opacity: .55; }
+
+/* ---------- 테마 스위치 ----------
+   어느 화면에서나 같은 자리. 판 위에서는 상단 바가 이 자리를 비워 둔다.
+   해가 왼쪽, 달이 오른쪽. 손잡이가 켜진 쪽으로 미끄러진다. */
+.theme-btn {
+  position: fixed; top: 10px; right: 11px; z-index: 40;
+  width: 48px; height: 26px; padding: 0; border-radius: 999px;
+  background: var(--panel2); border: 1px solid var(--line);
+  box-shadow: inset 0 1px 3px rgba(30,40,55,.18);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.theme-btn .tb-ico {
+  font-size: 10px; line-height: 1; color: var(--faint); width: 22px; text-align: center;
+  pointer-events: none;
+}
+.theme-btn .tb-knob {
+  position: absolute; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--panel); border: 1px solid var(--line-strong);
+  box-shadow: 0 2px 5px -2px rgba(30,40,55,.55);
+  transition: transform .18s cubic-bezier(.3,1.2,.5,1);
+  pointer-events: none;
+}
+:root[data-theme="dark"] .theme-btn .tb-knob { transform: translateX(22px); }
+.theme-btn:hover:not(:disabled) { border-color: var(--line-strong); }
+.theme-btn:active:not(:disabled) { transform: none; }
+@media (prefers-reduced-motion: reduce) { .theme-btn .tb-knob { transition: none; } }
+.bar { padding-right: 64px; }
