@@ -14,6 +14,8 @@
 
   var SCREENS = ['title', 'guide', 'menu', 'lobby', 'game'];
   function show(which) {
+    // 판 화면을 벗어나면 "지금 판 중"에서 뺀다
+    if (which !== 'game' && window.norara && norara.live) norara.live(false);
     SCREENS.forEach(function (id) { $(id).classList.toggle('hidden', id !== which); });
     window.scrollTo(0, 0);
     // 멈춤 표시가 화면 전환 중에 남으면 판이 영영 안 눌린다.
@@ -91,6 +93,8 @@
   function busy() { return !!App.heldView || !!App.drainTimer; }
 
   function applyView(nv) {
+    // 지금 판 중인지 — 방장도 참가자도 알린다(판 수는 방장만 센다)
+    if (window.norara && norara.live) norara.live(nv.phase !== 'over');
     if (busy()) { App.queue.push(nv); return; }
     // 차례나 단계가 바뀌면 고르던 대상을 푼다 — 참가자는 doAction 을 거치지 않아 다음 차례까지 남았다
     if (App.view && (App.view.turn !== nv.turn || App.view.phase !== nv.phase)) App.sel = null;
