@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>다빈치코드</title>
+<meta name="description" content="다빈치코드 보드게임. 방 코드나 초대 링크로 최대 4인 온라인 대전, 혼자면 봇과.">
+<meta name="theme-color" content="#eceef1">
+<meta property="og:title" content="다빈치코드">
+<meta property="og:description" content="방 코드나 초대 링크로 최대 4인 온라인 대전.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d0f14'/%3E%3Crect x='6' y='8' width='8' height='16' rx='2' fill='%23f0ece4'/%3E%3Crect x='18' y='8' width='8' height='16' rx='2' fill='%232a2f3a' stroke='%23555d6e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+<!-- 테마를 그리기 전에 정한다. 나중에 정하면 밝은 화면이 한 번 번쩍인다. -->
+<script>(function(){try{var t=localStorage.getItem('davinci.theme');
+if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+document.documentElement.setAttribute('data-theme',t);
+}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+<link rel="stylesheet" href="style.css?v=1daf825f">
+</head>
+<body>
+
+<!-- 타이틀 -->
+<section id="title" class="screen">
+  <div class="wrap hero">
+    <div class="hero-tiles" aria-hidden="true">
+      <div class="tile big b down" style="--r:-13deg;--i:0"><span class="face">다</span></div>
+      <div class="tile big w down" style="--r:-6deg;--i:1"><span class="face">빈</span></div>
+      <div class="tile big b down" style="--r:0deg;--i:2"><span class="face">치</span></div>
+      <div class="tile big w down" style="--r:6deg;--i:3"><span class="face">코</span></div>
+      <div class="tile big b down" style="--r:13deg;--i:4"><span class="face">드</span></div>
+    </div>
+    <h1 class="hero-title">다빈치코드</h1>
+    <div class="hero-rule"></div>
+    <p class="hero-tag">숫자는 가려지고 색만 보입니다.<br>순서를 읽어 상대의 숫자를 맞히세요.</p>
+    <button id="btnGo" class="primary">시작하기</button>
+    <button id="btnGuide" class="ghost">가이드</button>
+
+    <!-- 열린 방 — 시작 전이고 자리가 남은 공개 방. 누르면 코드를 채워 고르는 화면으로 간다 -->
+    <div class="rooms" id="rooms">
+      <div class="rooms-head">
+        <b>열린 방</b>
+        <span class="rooms-n" id="roomsN"></span>
+        <button id="btnRooms" class="linkbtn" type="button">새로 보기</button>
+      </div>
+      <div class="rooms-list" id="roomsList"><p class="rooms-none">방 목록을 불러오는 중…</p></div>
+    </div>
+    <p class="legal">이 프로젝트는 보드게임 『다빈치코드』를 구현한 학습 목적의 비공식 팬 프로젝트입니다.<br>본 프로젝트는 비영리이며, 어떠한 수익도 발생시키지 않습니다.<br>『다빈치코드』의 명칭 및 관련 상표에 대한 모든 권리는 원권리자에게 있습니다.<br>게임 내 모든 이미지는 이모지 및 AI로 생성한 창작물입니다.<br>원권리자의 요청이 있을 경우 즉시 프로젝트를 비공개 전환 또는 삭제하겠습니다.<br>문의: gyolno2@naver.com</p>
+  </div>
+</section>
+
+<!-- 가이드 -->
+<section id="guide" class="screen hidden">
+  <div class="wrap">
+    <h2 class="sub">가이드</h2>
+
+    <div class="block">
+      <h2>타일</h2>
+      <p class="gtext">검정 0~11, 흰색 0~11, 그리고 <b>조커 2장</b>(막대 표시). 모두 26장입니다.<br>
+        <b>색은 뒷면에서도 보입니다.</b> 가려지는 것은 숫자뿐입니다.</p>
+      <div class="gtiles">
+        <div class="tile b">0</div><div class="tile w">0</div>
+        <div class="tile b down"></div><div class="tile w joker">—</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2>손패 순서</h2>
+      <p class="gtext">항상 <b>작은 수에서 큰 수</b> 순으로 놓입니다.
+        같은 숫자면 <b>검정이 왼쪽</b>입니다. 조커만은 어느 자리에나 둘 수 있습니다.</p>
+      <div class="gtiles">
+        <div class="tile b">2</div><div class="tile b">5</div>
+        <div class="tile w">5</div><div class="tile b">9</div>
+      </div>
+      <div class="dir"><span>작음</span><span class="line"></span><span>큼</span></div>
+    </div>
+
+    <div class="block">
+      <h2>시작할 때</h2>
+      <p class="gtext">바닥에서 <b>색만 보고</b> 손패를 직접 골라옵니다(2인 4장, 3~4인 3장).
+        조커가 나오면 원하는 자리에 두세요.<br>
+        게임 시작을 누르기 전까지 <b>배치는 아무도 볼 수 없습니다.</b>
+        무슨 색을 몇 장 가졌는지만 공개됩니다.</p>
+      <p class="gtext">모두 시작을 누르면 <b>순서 패</b>를 한 장씩 뽑습니다.
+        가장 높은 숫자를 뽑은 사람이 <b>선공</b>(내가 먼저)이나 <b>후공</b>(내가 마지막)을 고릅니다.
+        차례는 <b>시계방향</b>으로 돕니다.</p>
+    </div>
+
+    <div class="block">
+      <h2>내 차례</h2>
+      <p class="gtext">바닥에서 한 장 집고, 상대의 덮인 타일 하나를 지목해 값을 부릅니다.</p>
+      <ul class="glist">
+        <li><b>적중</b> — 그 타일이 공개됩니다. 이어서 한 번 더 맞힐지, 멈출지 고릅니다.</li>
+        <li><b>빗나감</b> — 집은 타일을 공개해서 손패에 넣고 차례가 끝납니다.</li>
+      </ul>
+      <p class="gtext">바닥이 비면 집지 않고 추측합니다. 빗나가면 <b>자기 타일 하나를 스스로 공개</b>합니다.</p>
+    </div>
+
+    <div class="block">
+      <h2>기억하세요</h2>
+      <p class="gtext">누가 무엇을 불렀는지는 <b>그 순간에만</b> 화면에 뜨고 사라집니다.
+        어디에도 기록이 남지 않으니, 헷갈리거나 까먹으면 그만큼 불리해집니다.</p>
+    </div>
+
+    <div class="block">
+      <h2>승리</h2>
+      <p class="gtext">자기 타일이 전부 공개되면 탈락. 마지막까지 숫자를 지킨 사람이 이깁니다.</p>
+    </div>
+
+    <button id="btnGuideBack" class="ghost">뒤로</button>
+  </div>
+</section>
+
+<!-- 선택 -->
+<section id="menu" class="screen hidden">
+  <div class="wrap">
+    <h2 class="sub">어떻게 하시겠어요?</h2>
+
+    <label class="field">
+      <span>이름</span>
+      <input id="name" maxlength="12" placeholder="이름" autocomplete="off">
+    </label>
+
+    <div class="block">
+      <h2>혼자 연습</h2>
+      <div class="row">
+        <label class="field grow"><span>인원</span>
+          <select id="soloCount"><option value="2">2인</option><option value="3">3인</option><option value="4" selected>4인</option></select>
+        </label>
+        <label class="field grow"><span>봇 실력</span>
+          <select id="soloSkill">
+            <option value="0.45">쉬움</option>
+            <option value="0.75" selected>보통</option>
+            <option value="1">어려움</option>
+          </select>
+        </label>
+      </div>
+      <button id="btnSolo" class="primary">봇과 시작</button>
+    </div>
+
+    <div class="block">
+      <h2>온라인 (최대 4인)</h2>
+      <label class="check"><input type="checkbox" id="hostPriv"> 비공개 방 <span class="fine-in">— 열린 방 목록에 안 보이고 코드·링크로만 들어옵니다</span></label>
+      <button id="btnHost" class="primary">방 만들기</button>
+      <div class="row">
+        <input id="joinCode" class="grow code-in" maxlength="4" placeholder="방 코드" autocomplete="off">
+        <button id="btnJoin">참가</button>
+      </div>
+      <p class="fine">서버가 심판을 맡습니다. 방장이 나가도 판은 이어지고, 새로고침해도 자리로 돌아옵니다. 봇 실력은 위 혼자 연습 칸의 값으로 시작합니다.</p>
+    </div>
+
+    <button id="btnMenuBack" class="ghost">뒤로</button>
+  </div>
+</section>
+
+<!-- 대기실 -->
+<section id="lobby" class="screen hidden">
+  <div class="wrap">
+    <h2 class="sub">방 코드</h2>
+    <div class="code" id="roomCode">····</div>
+    <button id="btnCopy" class="copy">초대 링크 복사</button>
+    <p class="fine" id="lobbyHint">친구에게 코드나 초대 링크를 보내세요.</p>
+    <div id="seats" class="seats"></div>
+    <div id="hostCfg" class="block cfg">
+      <label class="field"><span>봇 실력</span>
+        <select id="lobbySkill">
+          <option value="0.45">쉬움</option>
+          <option value="0.75">보통</option>
+          <option value="1">어려움</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="lobbyPriv"> 비공개 방 <span class="fine-in">— 열린 방 목록에 안 보입니다</span></label>
+    </div>
+    <p class="fine hidden" id="guestCfg"></p>
+    <div class="row" id="hostControls">
+      <button id="btnAddBot" class="grow">봇 추가</button>
+      <button id="btnStart" class="primary grow">시작</button>
+    </div>
+    <button id="btnLeave" class="ghost">나가기</button>
+  </div>
+</section>
+
+<!-- 게임 -->
+<section id="game" class="screen hidden">
+  <header class="bar">
+    <span id="turnInfo">—</span>
+    <span class="spacer"></span>
+    <label class="toggle"><input type="checkbox" id="hint"><span>추론 보조</span></label>
+    <button id="btnQuit" class="mini">나가기</button>
+  </header>
+
+  <div class="table">
+    <div class="nowband" id="nowband"><span class="nb-dot"></span><span class="nb-seq" id="nowSeq"></span></div>
+    <div class="cell top"    id="seatTop"></div>
+    <div class="cell left"   id="seatLeft"></div>
+    <div class="cell center" id="center">
+      <!-- 판 한가운데 안내 — 지금 무슨 단계인지, 무엇을 해야 하는지 -->
+      <div class="stage" id="stage" aria-live="polite">
+        <div class="st-steps" id="stageSteps"></div>
+        <div class="st-title" id="stageTitle"></div>
+        <div class="st-text" id="stageText"></div>
+        <div class="st-acts" id="stageActs"></div>
+      </div>
+      <div id="floorArea"></div>
+    </div>
+    <div class="cell right"  id="seatRight"></div>
+    <div class="cell me"     id="seatMe"></div>
+  </div>
+
+</section>
+
+<!-- 결과 -->
+<div id="over" class="overlay hidden">
+  <div class="card">
+    <div class="big" id="overTitle">—</div>
+    <p class="sub" id="overText"></p>
+    <button id="btnAgain" class="primary">다시하기</button>
+    <p class="fine hidden" id="overHint"></p>
+    <button id="btnOverOut" class="ghost">처음으로</button>
+  </div>
+</div>
+
+<div id="announce" class="announce"></div>
+<div id="banner" class="banner"><div class="bn-title" id="bannerTitle"></div><div class="bn-sub" id="bannerSub"></div></div>
+
+<div id="toast" class="toast"></div>
+
+<button id="themeBtn" class="theme-btn" role="switch" aria-checked="false" aria-label="어둡게 보기" title="밝게 / 어둡게"><span class="tb-ico">☀</span><span class="tb-ico">☾</span><span class="tb-knob"></span></button>
+
+<div class="sig">정한결</div>
+
+<!-- 같은 방 사람끼리 하는 채팅 — 봇만 있는 방에서는 뜨지 않는다 -->
+<button id="chatBtn" class="chat-btn" hidden aria-label="채팅 열기">💬<span class="chat-n" id="chatN" hidden></span></button>
+<div id="chatPeek" class="chat-peek" hidden role="status" aria-live="polite"></div>
+<section id="chat" class="chat" hidden aria-label="채팅">
+  <header class="chat-head"><b>채팅</b><span class="chat-sub" id="chatWho"></span><button class="chat-x" id="chatX" aria-label="닫기">✕</button></header>
+  <div class="chat-log" id="chatLog"></div>
+  <form class="chat-in" id="chatForm">
+    <input id="chatText" maxlength="200" placeholder="같은 방 사람들에게" autocomplete="off">
+    <button type="submit">보내기</button>
+  </form>
+</section>
+
+<!-- rules.js · ai.js 는 저장소 루트의 원본을 가리키는 심볼릭 링크다. 서버(game.js)와 같은 파일을 쓴다 -->
+<script src="rules.js?v=aaf37e77"></script>
+<script src="ai.js?v=35335987"></script>
+<script src="app.js?v=69a769f7"></script>
+<!-- 연출 속도 재기 — ?qa=pace 로 들어올 때만 불러온다 (평소에는 요청조차 없다) -->
+<script>if(new URLSearchParams(location.search).get('qa')==='pace'){var s=document.createElement('script');s.src='qa/scene.js';document.body.appendChild(s);}</script>
+
+<!-- 방문 통계와 오류 수집 — 허브와 같은 곳으로 모인다.
+     GoatCounter 는 쿠키를 쓰지 않고 개인을 가려내지 않는다. 오류는 메시지·파일·줄만 보낸다. -->
+<script>
+(function () {
+  var APP = "davinci";
+
+  // 게임마다 따로 세어지게 이름을 미리 정해 둔다 (워커 게임은 경로가 다 "/" 라서 안 그러면 한 줄로 뭉친다)
+  window.goatcounter = { path: APP };
+  var sc = document.createElement("script");
+  sc.async = true;
+  sc.src = "https://gc.zgo.at/count.js";
+  sc.setAttribute("data-goatcounter", "https://41ways.goatcounter.com/count");
+  document.head.appendChild(sc);
+
+  // 판 수·인원·걸린 시간 — 게임 코드에서 norara.ev("start", { n: 인원 }) 처럼 부른다.
+  // 날짜·게임·이름으로 묶어 더하기만 하므로 한 판에 한 줄씩 쌓이지 않는다.
+  // 지금 누가 있나 — 화면이 보이는 동안 1분에 한 번 "여기 있음"을 보낸다. 판 중인지(play)
+  // 화면만 보는지(look)를 같이 싣는다. 탭마다 무작위 번호 하나뿐, 개인을 가려낼 정보는 없다.
+  var sid = (function () {
+    try {
+      var s = sessionStorage.getItem("norara.sid");
+      if (!s) { s = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); sessionStorage.setItem("norara.sid", s); }
+      return s;
+    } catch (e) { return Math.random().toString(36).slice(2, 14); }
+  })();
+  var playing = false;
+  function beat(st) {
+    try {
+      navigator.sendBeacon("https://norara-errors.41ways.workers.dev/beat",
+        JSON.stringify({ app: APP, sid: sid, st: st || (playing ? "play" : "look") }));
+    } catch (e) {}
+  }
+
+  window.norara = {
+    ev: function (name, o) {
+      o = o || {};
+      o.app = APP;
+      o.ev = name;
+      try {
+        navigator.sendBeacon("https://norara-errors.41ways.workers.dev/ev", JSON.stringify(o));
+      } catch (e) {}
+      if (name === "start") window.norara.live(true);   // 판 시작·끝은 "지금" 칸에도 바로 반영
+      if (name === "end") window.norara.live(false);
+    },
+    // 판 중인지 알린다. 방장만 판 수를 세는 온라인 게임도, 참가자는 이걸로 "판 중"에 잡힌다
+    live: function (on) {
+      on = !!on;
+      if (on === playing) return;
+      playing = on;
+      if (document.visibilityState === "visible") beat();
+    }
+  };
+
+  setTimeout(function () { if (document.visibilityState === "visible") beat(); }, 2000);
+  setInterval(function () { if (document.visibilityState === "visible") beat(); }, 60000);
+  document.addEventListener("visibilitychange", function () {
+    beat(document.visibilityState === "hidden" ? "gone" : null);   // 숨기면 바로 빠지고, 돌아오면 다시 잡힌다
+  });
+  addEventListener("pagehide", function () { beat("gone"); });
+
+  // 얼마나 머물렀는지 — 탭을 덮거나 닫을 때 한 번만. pagehide 만으로는 폰에서 자주 놓친다.
+  var came = Date.now(), told = false;
+  function leaving() {
+    if (told) return;
+    told = true;
+    var sec = Math.round((Date.now() - came) / 1000);
+    if (sec >= 5) window.norara.ev("visit", { sec: sec });   // 스쳐 간 것은 빼고
+  }
+  addEventListener("pagehide", leaving);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") leaving();
+  });
+
+  // 화면에서 터진 오류를 모은다. 한 번 열 때 다섯 건까지만 — 같은 오류가 쏟아져도 한도를 안 태우게.
+  var left = 5;
+  function send(o) {
+    if (left-- <= 0) return;
+    o.app = APP;
+    o.page = location.pathname + location.search;
+    try {
+      navigator.sendBeacon("https://norara-errors.41ways.workers.dev/report", JSON.stringify(o));
+    } catch (e) {}
+  }
+  addEventListener("error", function (e) {
+    if (!e.message) return;                  // 그림·소리 파일이 안 열린 것은 뺀다
+    send({ msg: e.message, src: e.filename, line: e.lineno, col: e.colno,
+           stack: e.error && e.error.stack });
+  });
+  addEventListener("unhandledrejection", function (e) {
+    var r = e.reason;
+    send({ msg: "처리되지 않은 거절: " + ((r && r.message) || r), stack: r && r.stack });
+  });
+})();
+</script>
+</body>
+</html>
