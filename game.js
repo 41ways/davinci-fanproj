@@ -216,11 +216,23 @@ function scheduleBot(room) {
   later(botStep, hold + think);
 }
 
-/** 예약해 둔 일을 한다. 그사이 방이 사라졌거나 판이 바뀌었으면 흘려보낸다. */
+/** 예약해 둔 일을 한다. 그사이 방이 사라졌거나 판이 바뀌었으면 흘려보낸다.
+ *  fn 이 예상 못 한 예외를 던지면(규칙 엔진과 봇/서버 진행이 어긋난 경우) 잡아서
+ *  지금 차례인 사람을 빼고 넘어간다 — 안 그러면 이 방의 다음 봇 수가 다시는 예약되지 않아
+ *  판이 영영 멈춘다(메시지로 들어오는 행동은 handle 쪽에서 이미 try/catch 로 감싸지만,
+ *  서버가 스스로 예약하는 봇 수는 그 경로를 안 탄다). */
 function step(room, fn) {
   const s = room.state;
   if (room.phase !== 'playing' || !s || s.phase === 'over' || rooms.get(room.code) !== room) return;
-  fn(room);
+  try {
+    fn(room);
+  } catch (err) {
+    console.error('판 진행 중 오류 — 지금 차례인 사람을 빼고 계속함', room.code, err);
+    if (s.phase !== 'over') {
+      const cur = R.current(s);
+      if (cur && !cur.out) R.dropPlayer(s, cur.id);
+    }
+  }
   afterMove(room);
 }
 
@@ -372,7 +384,9 @@ const ev = (room, obj) => broadcast(room, Object.assign({ t: 'ev' }, obj));
 
 function clearAll(room) {
   clearTimeout(room.timers.bot); room.timers.bot = null;
-  for (const p of room.players) { clearTimeout(p.dcT); p.dcT = null; }
+  // leaveT(대기실에서 끊긴 자리를 비우는 예약)는 대기실을 벗어나면 뜻이 없다 — 판이 시작된 뒤에도
+  // 남아 있으면(방장이 누군가의 유예가 끝나기 전에 시작을 눌렀을 때) 나중에 뜬금없이 한 번 더 돈다.
+  for (const p of room.players) { clearTimeout(p.dcT); p.dcT = null; clearTimeout(p.leaveT); p.leaveT = null; }
 }
 
 /* ─────────────────────────── 행동 ───────────────────────────
@@ -415,9 +429,12 @@ const ACTIONS = {
 function attach(room, p, ws) {
   clearTimeout(p.leaveT);
   p.ws = ws; p.connected = true;
-  // 방장이 자리를 비운 채면(모두 끊겼다 이 사람이 먼저 돌아온 경우 등) 돌아온 사람이 방장을 맡는다
+  // 방장이 자리를 비운 채면(모두 끊겼다 이 사람이 먼저 돌아온 경우 등) 돌아온 사람이 방장을 맡는다.
+  // 다른 사람이 이미 붙어 있으면(방장 말고) 아직 방장의 유예(20초)가 남아 있으므로 넘겨받지 않는다 —
+  // 안 그러면 방장이 잠깐 끊긴 사이 다른 사람이 들어오거나 새로고침만 해도 방장을 빼앗아 간다.
   const host = playerOf(room, room.hostId);
-  if (!host || (!host.connected && host !== p)) room.hostId = p.id;
+  const noOtherHost = !room.players.some(x => !x.bot && x.connected && x.id !== p.id);
+  if (!host || host === p || (!host.connected && noOtherHost)) room.hostId = p.id;
   ws.roomCode = room.code; ws.playerId = p.id;
   room.lastActive = Date.now();
   send(ws, { t: 'welcome', you: p.id, token: p.token, code: room.code });
