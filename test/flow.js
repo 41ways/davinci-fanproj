@@ -341,6 +341,19 @@ async function scenarios() {
     await waitFor(a, m => m.t === 'state' && m.cfg.priv === false);
   });
 
+  await step('시작한 방도 목록엔 남고, "게임 중"으로 표시된다', async () => {
+    const h = await create('도는방');
+    tx(h, { t: 'addBot' });
+    await waitFor(h, m => m.t === 'state' && m.players.length === 2);
+    tx(h, { t: 'start' });
+    await waitFor(h, m => m.t === 'state' && m.phase !== 'lobby');
+    const list = await listRooms();
+    const row = list.find(r => r.code === h.me.code);
+    assert.ok(row, '시작한 방이 목록에서 사라짐');
+    assert.strictEqual(row.state, 'playing');
+    tx(h, { t: 'leave' }); await waitFor(h, m => m.t === 'left'); h.close();
+  });
+
   await step('봇 실력은 방 설정이다', async () => {
     const k = mark(a);
     tx(a, { t: 'cfg', skill: 1 });
