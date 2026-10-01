@@ -123,11 +123,11 @@ async function check(name, fn) {
     assert.strictEqual(c.name, '민수');
   });
 
-  await check('열린 방 목록에 보이고, 비공개로 바꾸면 사라진다', async () => {
+  await check('열린 방 목록에 보이고, 비공개로 바꾸면 코드가 빠진다(priv:true)', async () => {
     assert.ok((await rooms()).some(r => r.code === code), '목록에 없음');
     tx(a, { t: 'cfg', priv: true });
     await waitFor(a, m => m.t === 'state' && m.cfg.priv === true);
-    assert.ok(!(await rooms()).some(r => r.code === code), '비공개인데 목록에 보임');
+    assert.ok(!(await rooms()).some(r => r.code === code), '비공개인데 코드가 목록에 보임');
   });
 
   await check('시작 패를 고르고 준비하면 순서 패, 고르면 판이 열린다', async () => {

@@ -14,6 +14,7 @@ const AI = require('./ai');
 
 const MAX_PLAYERS = 4;
 const MIN_PLAYERS = 2;
+const MAX_SPECS = 10;                          // 방당 관전자
 const SKILLS = [0.45, 0.75, 1];                // 쉬움 · 보통 · 어려움 — 화면의 고르기 칸과 같은 값
 // 테스트는 판을 빨리 돌려야 해서 DAVINCI_FAST=1 로 뜸을 들이지 않게 한다
 const FAST = typeof process !== 'undefined' && !!process.env && process.env.DAVINCI_FAST === '1';
@@ -65,8 +66,9 @@ function createRoom() {
     phase: 'lobby',            // lobby | playing | over
     hostId: null,
     players: [],               // 자리 — 사람과 봇. 판이 시작되면 이 순서가 자리 순서(시계방향)다
+    specs: [],                 // 관전자 — 자리(players)와 완전히 별개. 차례 · 인원 · 방장 · 승패에 끼지 않는다
     nextId: 1,
-    cfg: { skill: 0.75, priv: false },
+    cfg: { skill: 0.75, priv: false, spec: true },   // spec — 이미 시작했거나 꽉 찬 방에 관전자로 들어오기를 허용
     state: null,               // rules.js 의 판 상태. 대기실에서는 null
     pubEvent: null,            // 모두에게 보여도 되는 마지막 이벤트 (조커 옮기기를 가릴 때 대신 보낸다)
     heldEv: null,              // 마지막으로 읽을 시간을 준 이벤트
@@ -83,7 +85,7 @@ function createRoom() {
 function uniqueName(room, name) {
   const base = name;
   let n = 2;
-  while (room.players.some(p => p.name === name)) name = base + n++;
+  while (room.players.some(p => p.name === name) || room.specs.some(p => p.name === name)) name = base + n++;
   return name;
 }
 
@@ -104,6 +106,38 @@ function addPlayer(room, { name, bot }) {
 }
 
 const playerOf = (room, id) => room.players.find(p => p.id === id) || null;
+const specOf = (room, id) => room.specs.find(p => p.id === id) || null;
+
+/** 관전자를 받는다 — 자리(players)에는 넣지 않는다. 같은 방 사람이 아니라 보는 사람이다. */
+function addSpec(room, name) {
+  const sp = { id: 'v' + room.nextId++, name: uniqueName(room, name), ws: null, spec: true };
+  room.specs.push(sp);
+  return sp;
+}
+function removeSpec(room, id) {
+  const i = room.specs.findIndex(x => x.id === id);
+  if (i >= 0) room.specs.splice(i, 1);
+}
+
+/** 대기실에 빈 자리가 있으면 관전자를 들어온 순서대로 앉힌다. 앉은 사람에게는 정식 자리의 welcome 을
+ *  다시 보낸다(토큰 포함) — 화면이 그걸 받아 자리를 이어받는다. 앉힌 게 있으면 true. 상태는 부르는 쪽이 보낸다.
+ *  사람 플레이어가 아무도 붙어 있지 않은 방에는 앉히지 않는다 — 관전자만으로 방이 살아 있게 되므로. */
+function seatSpecs(room) {
+  if (room.phase !== 'lobby' || !room.specs.length) return false;
+  if (!room.players.some(p => !p.bot && p.connected)) return false;
+  let any = false;
+  while (room.players.length < MAX_PLAYERS && room.specs.length) {
+    const sp = room.specs.shift();
+    if (!sp.ws || sp.ws.readyState !== 1) continue;            // 이미 끊긴 소켓
+    const p = addPlayer(room, { name: sp.name });
+    p.ws = sp.ws; p.connected = true;
+    sp.ws.playerId = p.id; sp.ws.specId = null;
+    send(sp.ws, { t: 'welcome', you: p.id, token: p.token, code: room.code, role: 'player' });
+    ev(room, { kind: 'joined', by: p.id, name: p.name });
+    any = true;
+  }
+  return any;
+}
 
 /** 자리를 뺀다. 판 중이면 판에서도 빠지게 한다(R.dropPlayer — 쥔 패는 그대로 두고 탈락). */
 function removePlayer(room, id) {
@@ -349,7 +383,10 @@ function send(ws, obj) {
  *  - 시작 패 집기(draft)의 자리 번호: 남의 정리 중인 패는 자리별 색도 비밀이다. 몇 번째 자리에 끼었는지와
  *    무슨 색이 늘었는지를 모으면 배치가 드러나고, 준비 뒤 배치와 견주면 조커를 옮겼는지까지 드러난다. */
 function viewOf(room, me) {
+  // 관전자는 자리가 없다 — 이 id 는 어떤 자리와도 맞지 않으므로 모든 플레이어가 남의 것으로 가려진다.
+  // (내 패 · 집은 패 · 놓을 패 · 조커 자리가 아예 없다) 화면에는 me 가 없는 시야로 간다.
   const v = R.viewFor(room.state, me.id);
+  if (me.spec) v.me = null;
   let e = v.lastEvent;
   if (e && e.type === 'setupMove' && e.by !== me.id) e = room.pubEvent;
   if (e && e.type === 'draft' && e.by !== me.id) e = { type: 'draft', by: e.by, left: e.left };
@@ -360,6 +397,8 @@ function viewOf(room, me) {
 function stateFor(room, me) {
   return {
     t: 'state',
+    role: me && me.spec ? 'spec' : 'player',      // 관전자는 보기만 한다
+    specs: room.specs.map(s => s.name),           // 같은 방 관전자 이름 — 플레이어도 관전자도 서로 존재를 안다
     code: room.code,
     phase: room.phase,
     hostId: room.hostId,
@@ -376,9 +415,11 @@ function stateFor(room, me) {
 
 function pushState(room) {
   for (const p of room.players) if (!p.bot) send(p.ws, stateFor(room, p));
+  for (const s of room.specs) send(s.ws, stateFor(room, s));
 }
 function broadcast(room, obj) {
   for (const p of room.players) if (!p.bot) send(p.ws, obj);
+  for (const s of room.specs) send(s.ws, obj);
 }
 const ev = (room, obj) => broadcast(room, Object.assign({ t: 'ev' }, obj));
 
@@ -435,9 +476,9 @@ function attach(room, p, ws) {
   const host = playerOf(room, room.hostId);
   const noOtherHost = !room.players.some(x => !x.bot && x.connected && x.id !== p.id);
   if (!host || host === p || (!host.connected && noOtherHost)) room.hostId = p.id;
-  ws.roomCode = room.code; ws.playerId = p.id;
+  ws.roomCode = room.code; ws.playerId = p.id; ws.specId = null;
   room.lastActive = Date.now();
-  send(ws, { t: 'welcome', you: p.id, token: p.token, code: room.code });
+  send(ws, { t: 'welcome', you: p.id, token: p.token, code: room.code, role: 'player' });
   pushState(room);
   watchAbsent(room);             // 기다리던 사람이 돌아왔으면 빼려던 예약을 거둔다
 }
@@ -446,46 +487,63 @@ function attach(room, p, ws) {
  *  소켓을 쥔 채 "접속 중" 으로 영영 남아서, 그 자리 차례에서 판이 멈추고 방도 치워지지 않는다. */
 function detach(ws) {
   const room = rooms.get(ws.roomCode);
-  if (room) {
+  if (room && ws.specId) {
+    const sp = specOf(room, ws.specId);
+    if (sp && sp.ws === ws) { removeSpec(room, sp.id); pushState(room); }
+  } else if (room) {
     const p = playerOf(room, ws.playerId);
     if (p && p.ws === ws) {
       if (room.phase === 'lobby') {
         removePlayer(room, p.id);
         if (!room.players.some(x => !x.bot)) dropRoom(room);   // 빈 방은 곧바로 치운다
-        else pushState(room);
+        else { seatSpecs(room); pushState(room); }
       } else disconnect(ws);
     }
   }
-  ws.roomCode = null; ws.playerId = null;
+  ws.roomCode = null; ws.playerId = null; ws.specId = null;
 }
 
 function dropRoom(room) {
   clearAll(room);
   clearTimeout(room.timers.host);
   for (const p of room.players) clearTimeout(p.leaveT);
+  // 사람이 없는 방을 관전자만으로 살려 둘 수 없다 — 같이 내보내고 소켓을 닫는다
+  for (const sp of room.specs) {
+    const w = sp.ws;
+    if (!w) continue;
+    w.roomCode = null; w.specId = null;
+    send(w, { t: 'err', msg: '방이 닫혔어요.', fatal: true });
+    try { w.close(1000, 'room closed'); } catch (_) {}
+  }
+  room.specs = [];
   rooms.delete(room.code);
 }
 
-/** 열린 방 목록 — 코드를 몰라도 들어갈 수 있게. 시작 전이고 자리가 남았고 비공개가 아닌 방만. */
+/** 열린 방 목록 — 코드를 몰라도 들어갈 수 있게. 사람이 붙어 있는 방이면 시작했든 꽉 찼든 보인다.
+ *  비공개 방도 "있다" 는 것만 보인다 — 코드는 싣지 않는다(코드나 초대 링크를 아는 사람만 들어온다). */
 function roomList() {
   const list = [];
   const now = Date.now();
   for (const r of rooms.values()) {
-    if (r.cfg.priv) continue;
     if (!r.players.some(p => !p.bot && p.connected)) continue;
     const state = r.phase !== 'lobby' ? 'playing' : r.players.length >= MAX_PLAYERS ? 'full' : 'wait';
     const host = playerOf(r, r.hostId);
-    list.push({
-      code: r.code,
+    const item = {
       n: r.players.length,
       max: MAX_PLAYERS,
       bots: r.players.filter(p => p.bot).length,
       host: host ? host.name : '',
       age: Math.round((now - r.madeAt) / 1000),
       state,
-    });
+      spec: r.cfg.spec !== false,
+      watching: r.specs.length,
+    };
+    if (r.cfg.priv) item.priv = true; else item.code = r.code;
+    list.push(item);
   }
-  list.sort((a, b) => (a.state === 'wait' ? 0 : 1) - (b.state === 'wait' ? 0 : 1) || a.age - b.age);
+  // 공개 대기 방 → 눌러서 들어갈 수 있는 방(관전) → 나머지(비공개 · 관전 불가)
+  const rank = r => r.priv ? 2 : r.state === 'wait' ? 0 : r.spec ? 1 : 2;
+  list.sort((a, b) => rank(a) - rank(b) || a.age - b.age);
   return list.slice(0, 12);
 }
 
@@ -498,6 +556,7 @@ function handle(ws, msg) {
     case 'create': {
       const r = createRoom();
       if (msg.priv === true) r.cfg.priv = true;
+      if (msg.spec === false) r.cfg.spec = false;
       if (SKILLS.includes(msg.skill)) r.cfg.skill = msg.skill;
       const p = addPlayer(r, { name: clean(msg.name, 12) || '이름없음' });
       attach(r, p, ws);
@@ -507,11 +566,24 @@ function handle(ws, msg) {
       const code = clean(msg.code, 8).toUpperCase();
       const r = rooms.get(code);
       if (!r) return send(ws, { t: 'err', msg: '그런 방이 없습니다. 코드를 확인해 주세요.' });
-      if (r.phase !== 'lobby') return send(ws, { t: 'err', msg: '이미 시작된 방입니다.' });
-      if (r.players.length >= MAX_PLAYERS) return send(ws, { t: 'err', msg: '자리가 찼습니다.' });
-      const p = addPlayer(r, { name: clean(msg.name, 12) || '이름없음' });
-      attach(r, p, ws);
-      ev(r, { kind: 'joined', by: p.id, name: p.name });
+      const name = clean(msg.name, 12) || '이름없음';
+      if (r.phase === 'lobby' && r.players.length < MAX_PLAYERS) {
+        const p = addPlayer(r, { name });
+        attach(r, p, ws);
+        ev(r, { kind: 'joined', by: p.id, name: p.name });
+        return;
+      }
+      // 이미 시작했거나 자리가 꽉 찼다 — 관전을 허용한 방이면 보는 사람으로 들어온다
+      if (r.cfg.spec === false) {
+        return send(ws, { t: 'err', msg: (r.phase !== 'lobby' ? '이미 시작된 방입니다.' : '자리가 찼습니다.') + ' 관전을 허용하지 않는 방이에요.' });
+      }
+      if (r.specs.length >= MAX_SPECS) return send(ws, { t: 'err', msg: '관전석이 가득 찼어요.' });
+      const sp = addSpec(r, name);
+      sp.ws = ws;
+      ws.roomCode = r.code; ws.playerId = null; ws.specId = sp.id;
+      send(ws, { t: 'welcome', you: sp.id, token: null, code: r.code, role: 'spec' });
+      ev(r, { kind: 'watch', by: sp.id, name: sp.name });
+      pushState(r);
       return;
     }
     case 'resume': {
@@ -534,6 +606,11 @@ function handle(ws, msg) {
 
   const room = rooms.get(ws.roomCode);
   if (!room) return;
+  if (ws.specId) {                       // 관전자 — 채팅과 나가기만 받는다. 판 행동 · 설정은 조용히 무시
+    const sp = specOf(room, ws.specId);
+    if (sp) handleSpec(room, ws, sp, msg);
+    return;
+  }
   const me = playerOf(room, ws.playerId);
   if (!me) return;
   const isHost = room.hostId === me.id;
@@ -544,6 +621,7 @@ function handle(ws, msg) {
       if (!isHost || room.phase !== 'lobby') return;
       if (SKILLS.includes(msg.skill)) room.cfg.skill = msg.skill;
       if (typeof msg.priv === 'boolean') room.cfg.priv = msg.priv;
+      if (typeof msg.spec === 'boolean') room.cfg.spec = msg.spec;
       pushState(room);
       break;
     }
@@ -567,6 +645,7 @@ function handle(ws, msg) {
         target.ws.roomCode = null; target.ws.playerId = null;
       }
       removePlayer(room, target.id);
+      seatSpecs(room);                 // 빈 자리가 났으면 기다리던 관전자가 앉는다
       pushState(room);
       break;
     }
@@ -618,6 +697,7 @@ function handle(ws, msg) {
       room.heldEv = null;
       // 판 중에 떠난 사람은 대기실 떠나기 예약이 없어 다음 판에 유령 자리로 남는다
       for (const p of room.players) if (!p.bot && !p.connected) armLeave(room, p);
+      seatSpecs(room);                 // 다음 판부터 — 기다리던 관전자를 빈 자리에 앉힌다
       pushState(room);
       break;
     }
@@ -629,9 +709,28 @@ function handle(ws, msg) {
       send(ws, { t: 'left' });
       if (!room.players.some(p => !p.bot)) { dropRoom(room); break; }   // 봇만 남은 방은 둘 까닭이 없다
       ev(room, { kind: 'left', name });
+      seatSpecs(room);
       pushState(room);
       break;
     }
+  }
+}
+
+/** 관전자가 보낸 것 — 채팅과 나가기뿐이다. 추측 · 뽑기 · 설정 · 시작 같은 건 전부 조용히 버린다.
+ *  방이 살아 있는 것으로 치지 않으려고 room.lastActive 도 건드리지 않는다. */
+function handleSpec(room, ws, sp, msg) {
+  if (msg.t === 'chat') {
+    const text = clean(msg.text, 200);
+    if (!text) return;
+    const now = Date.now();
+    if (now - (sp.lastChat || 0) < 350) return;
+    sp.lastChat = now;
+    broadcast(room, { t: 'chat', from: sp.id, name: sp.name, text, spec: true });
+  } else if (msg.t === 'leave') {
+    removeSpec(room, sp.id);
+    ws.roomCode = null; ws.specId = null;
+    send(ws, { t: 'left' });
+    pushState(room);
   }
 }
 
@@ -641,6 +740,7 @@ function armLeave(room, p) {
   p.leaveT = setTimeout(() => {
     if (p.connected || room.phase !== 'lobby' || rooms.get(room.code) !== room) return;
     removePlayer(room, p.id);
+    if (room.players.some(x => !x.bot)) seatSpecs(room);
     pushState(room);
   }, LOBBY_GRACE);
 }
@@ -651,6 +751,11 @@ function armLeave(room, p) {
 function disconnect(ws, { keepSeat = false } = {}) {
   const room = rooms.get(ws.roomCode);
   if (!room) return;
+  if (ws.specId) {                           // 관전자는 유예도 이어받기도 없다 — 끊기면 목록에서 뺀다
+    const sp = specOf(room, ws.specId);
+    if (sp && sp.ws === ws) { removeSpec(room, sp.id); ws.specId = null; pushState(room); }
+    return;
+  }
   const p = playerOf(room, ws.playerId);
   if (!p || p.ws !== ws) return;
   p.connected = false; p.ws = null;

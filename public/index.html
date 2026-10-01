@@ -17,7 +17,7 @@
 if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
 document.documentElement.setAttribute('data-theme',t);
 }catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
-<link rel="stylesheet" href="style.css?v=1daf825f">
+<link rel="stylesheet" href="style.css?v=86cbeaf5">
 </head>
 <body>
 
@@ -37,10 +37,11 @@ document.documentElement.setAttribute('data-theme',t);
     <button id="btnGo" class="primary">시작하기</button>
     <button id="btnGuide" class="ghost">가이드</button>
 
-    <!-- 열린 방 — 시작 전이고 자리가 남은 공개 방. 누르면 코드를 채워 고르는 화면으로 간다 -->
+    <!-- 방 목록 — 공개 방은 누르면 코드를 채워 고르는 화면으로 간다(시작했거나 꽉 찬 방은 관전 허용일 때만).
+         비공개 방은 코드 없이 이름만 흐리게 보인다 -->
     <div class="rooms" id="rooms">
       <div class="rooms-head">
-        <b>열린 방</b>
+        <b>방 목록</b>
         <span class="rooms-n" id="roomsN"></span>
         <button id="btnRooms" class="linkbtn" type="button">새로 보기</button>
       </div>
@@ -141,7 +142,8 @@ document.documentElement.setAttribute('data-theme',t);
 
     <div class="block">
       <h2>온라인 (최대 4인)</h2>
-      <label class="check"><input type="checkbox" id="hostPriv"> 비공개 방 <span class="fine-in">— 열린 방 목록에 안 보이고 코드·링크로만 들어옵니다</span></label>
+      <label class="check"><input type="checkbox" id="hostPriv"> 비공개 방 <span class="fine-in">— 목록에는 코드 없이 이름만 보이고, 코드·링크로만 들어옵니다</span></label>
+      <label class="check"><input type="checkbox" id="hostSpec" checked> 관전 허용 <span class="fine-in">— 시작했거나 꽉 찬 방에도 보는 사람으로 들어옵니다</span></label>
       <button id="btnHost" class="primary">방 만들기</button>
       <div class="row">
         <input id="joinCode" class="grow code-in" maxlength="4" placeholder="방 코드" autocomplete="off">
@@ -162,6 +164,7 @@ document.documentElement.setAttribute('data-theme',t);
     <button id="btnCopy" class="copy">초대 링크 복사</button>
     <p class="fine" id="lobbyHint">친구에게 코드나 초대 링크를 보내세요.</p>
     <div id="seats" class="seats"></div>
+    <p class="fine hidden" id="specLobby"></p>
     <div id="hostCfg" class="block cfg">
       <label class="field"><span>봇 실력</span>
         <select id="lobbySkill">
@@ -170,7 +173,8 @@ document.documentElement.setAttribute('data-theme',t);
           <option value="1">어려움</option>
         </select>
       </label>
-      <label class="check"><input type="checkbox" id="lobbyPriv"> 비공개 방 <span class="fine-in">— 열린 방 목록에 안 보입니다</span></label>
+      <label class="check"><input type="checkbox" id="lobbyPriv"> 비공개 방 <span class="fine-in">— 목록에서는 눌러 들어올 수 없습니다</span></label>
+      <label class="check"><input type="checkbox" id="lobbySpec"> 관전 허용 <span class="fine-in">— 시작했거나 꽉 찬 방에도 보는 사람으로 들어옵니다</span></label>
     </div>
     <p class="fine hidden" id="guestCfg"></p>
     <div class="row" id="hostControls">
@@ -185,10 +189,12 @@ document.documentElement.setAttribute('data-theme',t);
 <section id="game" class="screen hidden">
   <header class="bar">
     <span id="turnInfo">—</span>
+    <span class="specn hidden" id="specN"></span>
     <span class="spacer"></span>
     <label class="toggle"><input type="checkbox" id="hint"><span>추론 보조</span></label>
     <button id="btnQuit" class="mini">나가기</button>
   </header>
+  <div class="specbar hidden" id="specBar" role="status">관전 중 — 다음 판부터 자리가 나면 같이 해요</div>
 
   <div class="table">
     <div class="nowband" id="nowband"><span class="nb-dot"></span><span class="nb-seq" id="nowSeq"></span></div>
@@ -245,7 +251,7 @@ document.documentElement.setAttribute('data-theme',t);
 <!-- rules.js · ai.js 는 저장소 루트의 원본을 가리키는 심볼릭 링크다. 서버(game.js)와 같은 파일을 쓴다 -->
 <script src="rules.js?v=aaf37e77"></script>
 <script src="ai.js?v=35335987"></script>
-<script src="app.js?v=69a769f7"></script>
+<script src="app.js?v=18dd640e"></script>
 <!-- 연출 속도 재기 — ?qa=pace 로 들어올 때만 불러온다 (평소에는 요청조차 없다) -->
 <script>if(new URLSearchParams(location.search).get('qa')==='pace'){var s=document.createElement('script');s.src='qa/scene.js';document.body.appendChild(s);}</script>
 
